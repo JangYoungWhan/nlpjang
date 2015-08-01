@@ -3,6 +3,8 @@ nlpjang provides a set of natural language processing tools.
 
 ##Prerequisites
 
+- GCC version 4.8 or greater.
+- MSVC version VC110(2012) or greater.
 - [CMake](http://www.cmake.org/) version 3.2.0 or greater.
 
 ##Submodules
@@ -10,8 +12,6 @@ nlpjang provides a set of natural language processing tools.
 - [garnut](https://github.com/JangYoungWhan/garnut)
 
 ##Getting Started
-
-Linux
 
 ```bash
 # Get the latest repository.
@@ -21,8 +21,8 @@ git clone https://github.com/JangYoungWhan/nlpjang.git nlpjang
 cd nlpjang
 
 # Download submodules
-submodule init
-submodule update
+git submodule init
+git submodule update
 
 # Move and create a workspace
 mkdir build
@@ -32,12 +32,6 @@ cd build
 cmake ../
 make
 
-```
-
-Windows
-
-```bash
-# Sorry, It is not ready yet.
 ```
 
 ##Contact
