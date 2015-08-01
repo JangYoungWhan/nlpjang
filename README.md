@@ -1,5 +1,6 @@
 # nlpjang
-nlpjang provides a set of natural language processing tools.
+nlpjang provides a set of C++ natural language processing tools.
+It supports multi-platforms and the goal is to make it easy to use NLP algorithms.
 
 ##Prerequisites
 
