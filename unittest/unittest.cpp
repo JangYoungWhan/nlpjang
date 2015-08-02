@@ -17,19 +17,27 @@ int main(int argc, char* argv[])
 
 #if 0 // test progressbar
   for (int i=0; i<size; ++i)
-    nlp::jang::ganet::ProgressBar<int>::dispalyPrgressBar(i, size);
+    nlp::jang::garnut::ProgressBar<int>::dispalyPrgressBar(i, size);
   std::cout << std::endl;
 #endif
 
 #if 1 // 
   std::wstring src_utf8 = L"hi";
   std::wstring src_unicode;
-  src_unicode.push_back(0x0001);
-  src_unicode.push_back(0x001A);
+  //src_unicode.push_back(0x0001);
+  //src_unicode.push_back(0x001A);
+  src_unicode.push_back(0x0061); // 1-byte
+  src_unicode.push_back(0x04E8); // 2-byte
+  src_unicode.push_back(0xAC00); // 3-byte
 
   std::string dst;
 
-  nlp::jang::ganet::EncodingConverter::convertFromUnicodeToUtf8(src_unicode, dst);
+  nlp::jang::garnut::EncodingConverter::convertFromUnicodeToUtf8(src_unicode, dst);
+  for (auto c=dst.begin(); c!=dst.end(); ++c)
+  {
+    printf("%02X\n", static_cast<unsigned char>(*c));
+  }
+
 #endif
   return 0;
 }
