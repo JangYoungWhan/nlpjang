@@ -10,6 +10,7 @@
 #include "encconv.hpp"
 
 #include <string>
+#include <vector>
 
 int main(int argc, char* argv[])
 {
@@ -23,20 +24,30 @@ int main(int argc, char* argv[])
 
 #if 1 // 
   std::wstring src_utf8 = L"hi";
-  std::wstring src_unicode;
-  //src_unicode.push_back(0x0001);
-  //src_unicode.push_back(0x001A);
-  src_unicode.push_back(0x0061); // 1-byte
-  src_unicode.push_back(0x04E8); // 2-byte
-  src_unicode.push_back(0xAC00); // 3-byte
+  std::wstring src_unicode_bmp;
+  src_unicode_bmp.push_back(0x0061); // 1-byte
+  src_unicode_bmp.push_back(0x04E8); // 2-byte
+  src_unicode_bmp.push_back(0xAC00); // 3-byte
+  std::vector<unsigned int> src_unicode_smp;
+  src_unicode_smp.push_back(0x0061); // 1-byte
+  src_unicode_smp.push_back(0x04E8); // 2-byte
+  src_unicode_smp.push_back(0xAC00); // 3-byte
+  src_unicode_smp.push_back(0x0010AC00); // 4-byte
 
   std::string dst;
 
-  nlp::jang::garnut::EncodingConverter::convertFromUnicodeToUtf8(src_unicode, dst);
+  nlp::jang::garnut::EncodingConverter::convertFromUnicodeToUtf8(src_unicode_bmp, dst);
   for (auto c=dst.begin(); c!=dst.end(); ++c)
   {
-    printf("%02X\n", static_cast<unsigned char>(*c));
-  }
+    printf("%02X ", static_cast<unsigned char>(*c));
+  } puts("\n");
+
+  dst.clear();
+  nlp::jang::garnut::EncodingConverter::convertFromUnicodeToUtf8(src_unicode_smp, dst);
+  for (auto c=dst.begin(); c!=dst.end(); ++c)
+  {
+    printf("%02X ", static_cast<unsigned char>(*c));
+  } puts("\n");
 
 #endif
   return 0;
