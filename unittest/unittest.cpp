@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
   std::cout << std::endl;
 #endif
 
-#if 1 // 
+#if 0 // test for unicode to utf8 converter.
   std::wstring src_utf8 = L"hi";
   std::wstring src_unicode_bmp;
   src_unicode_bmp.push_back(0x0061); // 1-byte
@@ -48,7 +48,22 @@ int main(int argc, char* argv[])
   {
     printf("%02X ", static_cast<unsigned char>(*c));
   } puts("\n");
-
 #endif
+
+#if 1 // test for utf8 to unicode converter.
+  std::string utf8_1byte = "hello world!";
+  std::string utf8_2byte;
+  std::string utf8_3byte;
+  std::string utf8_41byte;
+
+  std::wstring dst;
+
+  nlp::jang::garnut::EncodingConverter::convertFromUtf8ToUnicode(utf8_1byte, dst);
+  for (auto c=dst.begin(); c!=dst.end(); ++c)
+  {
+    printf("%02X ", static_cast<unsigned char>(*c));
+  } puts("\n");
+#endif
+
   return 0;
 }
