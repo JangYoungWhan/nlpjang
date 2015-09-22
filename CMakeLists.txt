@@ -19,7 +19,10 @@ add_subdirectory (garnut)
 #set (GARNUT_PROJECT_DIR garnut)
 
 # The name of amothyst originated from amethyst that known as the birthstone for Febrary.
-#add_subdirectory (amothyst)
+add_subdirectory (amuthyst)
+
+# The name of aquamaron originated from aquamarin that known as the birthstone for March.
+add_subdirectory (aquamaron)
 
 # It is used for unittest all libraries.
 add_subdirectory (unittest)

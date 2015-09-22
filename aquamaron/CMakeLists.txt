@@ -1,14 +1,14 @@
 #
 #  File    : CMakeLists.txt
 #  Author  : YW. Jang
-#  Date    : 2015.08.01.Sat
+#  Date    : 2015.08.26.Tue
 #
 #  Copyright 2015, YW. Jang, All rights reserved.
 #
 
 cmake_minimum_required (VERSION 3.2)
 
-project (unittest)
+project (libaquamaron)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU") # using gcc
   if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8)
@@ -33,35 +33,26 @@ endif()
 
 add_definitions(-DUNICODE -D_UNICODE)
 
-#set (EXECUTABLE_OUTPUT_PATH ${${PROJECT_NAME}_BINARY_DIR}/bin CACHE PATH "Output directory for applications" )
-
-# Set compiler flags and options. 
-# Here it is setting the Visual Studio warning level to 4
-#set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
-#message ("cxx Flags: " ${CMAKE_CXX_FLAGS})
-
 # The version number.
-set (UNITTEST_VERSION_MAJOR 1)
-set (UNITTEST_VERSION_MINOR 0)
-set (UNITTEST_VERSION_REVISION 0)
+set (AQUAMARON_VERSION_MAJOR 1)
+set (AQUAMARON_VERSION_MINOR 0)
+set (AQUAMARON_VERSION_REVISION 0)
 
-set (PACKAGE_VERSION "${UNITTEST_VERSION_MAJOR}.${UNITTEST_VERSION_MINOR}.${UNITTEST_VERSION_REVISION}")
+set (PACKAGE_VERSION "${AQUAMARON_VERSION_MAJOR}.${AQUAMARON_VERSION_MINOR}.${AQUAMARON_VERSION_REVISION}")
 
 # Make sure the compiler can find include files from our libraries.
-include_directories (${CMAKE_SOURCE_DIR})
+include_directories (${PROJECT_SOURCE_DIR})
 include_directories (${PROJECT_SOURCE_DIR}/include)
 #include_directories (${CMAKE_SOURCE_DIR}/garnut/include)
-#include_directories (${CMAKE_SOURCE_DIR}/aquamaron/include)
 
-# Make sure the linker can find the garnut library once it is built.
-#link_directories (${GARNUT_BINARY_DIR})
+file (GLOB_RECURSE LIB_HDRS *.hpp)
+file (GLOB_RECURSE LIB_SRCS *.cpp)
 
-# Add executable called "unittest" that is built from the source files.
-add_executable(unittest unittest.cpp)
+add_library (libaquamaron STATIC
+             ${LIB_HDRS}
+             ${LIB_SRCS})
 
+# Set dependent libraries.
 set (ALL_LIBS
-	 libgarnut
-   libamuthyst
-   libaquamaron)
-
-target_link_libraries (unittest ${ALL_LIBS})
+   libgarnut)
+target_link_libraries (libaquamaron ${ALL_LIBS})

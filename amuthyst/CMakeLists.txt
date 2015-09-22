@@ -1,14 +1,14 @@
 #
 #  File    : CMakeLists.txt
 #  Author  : YW. Jang
-#  Date    : 2015.08.01.Sat
+#  Date    : 2015.08.24.Mon
 #
 #  Copyright 2015, YW. Jang, All rights reserved.
 #
 
 cmake_minimum_required (VERSION 3.2)
 
-project (unittest)
+project (libamuthyst)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU") # using gcc
   if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8)
@@ -33,7 +33,8 @@ endif()
 
 add_definitions(-DUNICODE -D_UNICODE)
 
-#set (EXECUTABLE_OUTPUT_PATH ${${PROJECT_NAME}_BINARY_DIR}/bin CACHE PATH "Output directory for applications" )
+# Specify a common place where CMake should put the library.
+#set (LIBRARY_OUTPUT_PATH ${${PROJECT_NAME}_BINARY_DIR}/lib CACHE PATH "Output directory for libraries" )
 
 # Set compiler flags and options. 
 # Here it is setting the Visual Studio warning level to 4
@@ -41,11 +42,15 @@ add_definitions(-DUNICODE -D_UNICODE)
 #message ("cxx Flags: " ${CMAKE_CXX_FLAGS})
 
 # The version number.
-set (UNITTEST_VERSION_MAJOR 1)
-set (UNITTEST_VERSION_MINOR 0)
-set (UNITTEST_VERSION_REVISION 0)
+set (AMUTHYST_VERSION_MAJOR 1)
+set (AMUTHYST_VERSION_MINOR 0)
+set (AMUTHYST_VERSION_REVISION 0)
 
-set (PACKAGE_VERSION "${UNITTEST_VERSION_MAJOR}.${UNITTEST_VERSION_MINOR}.${UNITTEST_VERSION_REVISION}")
+set (PACKAGE_VERSION "${AMUTHYST_VERSION_MAJOR}.${AMUTHYST_VERSION_MINOR}.${AMUTHYST_VERSION_REVISION}")
+
+# Configure a header file.
+#configure_file ("${PROJECT_SOURCE_DIR}/amuthyst_config.h.in"
+#                 "${PROJECT_BINARY_DIR}/amuthyst_config.h")
 
 # Make sure the compiler can find include files from our libraries.
 include_directories (${CMAKE_SOURCE_DIR})
@@ -53,15 +58,15 @@ include_directories (${PROJECT_SOURCE_DIR}/include)
 #include_directories (${CMAKE_SOURCE_DIR}/garnut/include)
 #include_directories (${CMAKE_SOURCE_DIR}/aquamaron/include)
 
-# Make sure the linker can find the garnut library once it is built.
-#link_directories (${GARNUT_BINARY_DIR})
+file (GLOB_RECURSE LIB_HDRS *.hpp)
+file (GLOB_RECURSE LIB_SRCS *.cpp)
 
-# Add executable called "unittest" that is built from the source files.
-add_executable(unittest unittest.cpp)
+add_library (libamuthyst STATIC
+             ${LIB_HDRS}
+             ${LIB_SRCS})
 
+# Set dependent libraries.
 set (ALL_LIBS
-	 libgarnut
-   libamuthyst
+   libgarnut
    libaquamaron)
-
-target_link_libraries (unittest ${ALL_LIBS})
+target_link_libraries (libamuthyst ${ALL_LIBS})
