@@ -22,7 +22,7 @@
 int main(int argc, char* argv[])
 {
 #if 1 // auto spacer
-  nlp::jang::amuthyst::AutoSpacer autoSpacer(2);
+  nlp::jang::amuthyst::AutoSpacer autoSpacer(3);
   autoSpacer.train("C:/dummy/kor_small.txt");
 #endif
 

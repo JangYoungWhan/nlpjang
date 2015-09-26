@@ -9,6 +9,8 @@
 #ifndef HIDDEN_MARKOV_MODEL_HPP_
 #define HIDDEN_MARKOV_MODEL_HPP_
 
+#define TRIGRAM
+
 #include "garnut/include/ngram.hpp"
 
 #include <map>
@@ -21,7 +23,7 @@ class HiddenMarkovModel
 {
 public:
   HiddenMarkovModel()
-    :n_(2), num_of_word_(0), num_of_state_(0)
+    :n_(3), num_of_word_(0), num_of_state_(0)
   {
     transition_lprob_ = nullptr;
     emission_lprob_ = nullptr;
@@ -36,26 +38,33 @@ public:
 
   virtual ~HiddenMarkovModel()
   {
+ #ifdef BIGRAM
     free(transition_lprob_[0]);
     free(transition_lprob_);
+ #endif
+
+ #ifdef TRIGRAM
+    free(transition_lprob_[0][0]);
+    free(transition_lprob_[0]);
+    free(transition_lprob_);
+ #endif
+
     free(emission_lprob_[0]);
     free(emission_lprob_);
   }
 
   virtual void countTransition(const garnut::Ngram<T_State>& tags)
   {
-    /* TO DO : YW. Jang
-    for (size_t i=0; tags.size(); ++i)
+#ifdef TRIGRAM
+    for (size_t i=2; tags.size(); ++i)
     {
-      unsigned int tag_id = static_cast<unsigned int>(tags[i]);
-      for (size_t i=0; i<tags.size()-n_+1; ++i)
-      {
-        for (unsigned int j=0; j<n_; ++j)
-        {
-          //(tags[i + j]);
-        }
-      }
-    }*/
+      unsigned int tag_id_1st = static_cast<unsigned int>(tags[i-2]);
+      unsigned int tag_id_2nd = static_cast<unsigned int>(tags[i-1]);
+      unsigned int tag_id_3rd = static_cast<unsigned int>(tags[i]);
+      
+      transition_lprob_[tag_id_1st][tag_id_2nd][tag_id_3rd] += 1.0;
+    }
+#endif
   }
 
   virtual void countEmission(const garnut::Ngram<T_Word>& words, const garnut::Ngram<T_State>& tags)
@@ -108,16 +117,35 @@ protected:
   void prepareLogProbMatrix()
   {
     // Memory allocate for the matrix of transition log prob.
+#ifdef BIGRAM
     transition_lprob_ = (float**) calloc (sizeof(float*), num_of_state_);
     transition_lprob_[0] = (float*) calloc (sizeof(float), num_of_state_ * num_of_state_);
-    for(unsigned int i=1; i<num_of_state_; ++i){
+    for(unsigned int i=1; i<num_of_state_; ++i)
+    {
       transition_lprob_[i] = transition_lprob_[i-1] + num_of_state_;
     }
+#endif
+
+#ifdef TRIGRAM
+    transition_lprob_ = (float***) calloc (sizeof(float**), num_of_state_);
+    transition_lprob_[0] = (float**) calloc (sizeof(float*), num_of_state_ * num_of_state_);
+    transition_lprob_[0][0] = (float*) calloc (sizeof(float), num_of_state_ * num_of_state_ * num_of_state_);
+    for(unsigned int i=1; i<num_of_state_; ++i)
+    {
+      transition_lprob_[i] = transition_lprob_[i-1] + num_of_state_;
+
+    }
+    for(unsigned int j=1; j<num_of_state_ * num_of_state_; ++j)
+    {
+      transition_lprob_[0][j] = transition_lprob_[0][j-1] + num_of_state_;
+    }
+#endif
 
     // Memory allocate for the matrix of emission log prob.
     emission_lprob_ = (float**) calloc (sizeof(float*), num_of_word_);
     emission_lprob_[0] = (float*) calloc (sizeof(float), num_of_word_ * num_of_state_);
-    for(unsigned int i=1; i<num_of_word_; ++i){
+    for(unsigned int i=1; i<num_of_word_; ++i)
+    {
       emission_lprob_[i] = emission_lprob_[i-1] + num_of_state_;
     }
   }
@@ -174,7 +202,13 @@ protected:
   std::vector<T_State> id2state_;
 
 protected:
+#ifdef BIGRAM
   float** transition_lprob_;
+#endif
+
+#ifdef TRIGRAM
+  float*** transition_lprob_;
+#endif
   float** emission_lprob_;
 };
 
