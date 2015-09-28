@@ -141,7 +141,7 @@ protected:
   inline
   bool insertState(const T_State& state)
   {
-    auto find_result = state2id_.find(word);
+    auto find_result = state2id_.find(state);
     if (find_result == state2id_.end())
     {
       state2id_.insert(std::make_pair(state, num_of_state_++));
