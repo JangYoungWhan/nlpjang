@@ -25,6 +25,7 @@ public:
   HiddenMarkovModel()
     :n_(3), num_of_word_(0), num_of_state_(0)
   {
+    total_state_freq_ = nullptr;
     transition_lprob_ = nullptr;
     emission_lprob_ = nullptr;
   }
@@ -32,12 +33,15 @@ public:
   HiddenMarkovModel(unsigned int n)
     :n_(n), num_of_word_(0), num_of_state_(0)
   {
+    total_state_freq_ = nullptr;
     transition_lprob_ = nullptr;
     emission_lprob_ = nullptr;
   }
 
   virtual ~HiddenMarkovModel()
   {
+    free(total_state_freq_);
+
  #ifdef BIGRAM
     free(transition_lprob_[0]);
     free(transition_lprob_);
@@ -55,14 +59,12 @@ public:
 
   virtual void countTransition(const garnut::Ngram<T_State>& tags)
   {
+    garnut::Ngram<unsigned int> tag_ids;
+    convertTagToTagId(tags, tag_ids);
 #ifdef TRIGRAM
-    for (size_t i=2; tags.size(); ++i)
-    {
-      unsigned int tag_id_1st = static_cast<unsigned int>(tags[i-2]);
-      unsigned int tag_id_2nd = static_cast<unsigned int>(tags[i-1]);
-      unsigned int tag_id_3rd = static_cast<unsigned int>(tags[i]);
-      
-      transition_lprob_[tag_id_1st][tag_id_2nd][tag_id_3rd] += 1.0;
+    for (size_t i=2; i<tag_ids.size(); ++i)
+    {      
+      transition_lprob_[tag_ids[i-2]][tag_ids[i-1]][tag_ids[i]] += 1.0f;
     }
 #endif
   }
@@ -81,41 +83,48 @@ public:
     }
   }
 
-
-  /*
-  virtual void trainHMM(const std::string& train_db_path)
+  virtual void trainHMM()
   {
-
-  }
-
-  virtual bool trainHMM(const std::vector<std::pair<garnut::Ngram<T_Word>, garnut::Ngram<T_State>>>& tagged_ngrams)
-  {
-    for (auto& tagged_ngram : tagged_ngrams)
+    for (unsigned int i=0; i<num_of_state_; ++i)
     {
-      
+      for (unsigned int j=0; j<num_of_state_; ++j)
+      {
+        for (unsigned int k=0; k<num_of_state_; ++k)
+        {
+          if (transition_lprob_[i][j][k] < 0.9)
+          {
+            transition_lprob_[i][j][k] = 1.0 / total_state_freq_[k];
+          }
+          else
+          {
+            transition_lprob_[i][j][k] = log(transition_lprob_[i][j][k] / total_state_freq_[k]);
+          }
+        }
+      }
     }
-    return true;
+
+    for (unsigned int i=0; i<num_of_word_; ++i)
+    {
+      for (unsigned int j=0; j<num_of_state_; ++j)
+      {
+        if (emission_lprob_[i][j] < 0.9)
+        {
+          emission_lprob_[i][j] = 0.01 / total_state_freq_[j];
+        }
+        else
+        {
+          emission_lprob_[i][j] = log(emission_lprob_[i][j] / total_state_freq_[j]);
+        }
+      }
+    }
   }
-
-  void testHMM()
-  {
-
-  }
-
-  void writeTrainingResult()
-  {
-
-  }
-  
-  void insertWordAndState(const T_Word& word, const T_State& state)
-  {
-    insertWord(word);
-    insertState(state);
-  }*/
 
 protected:
   void prepareLogProbMatrix()
   {
+    // Memory allocate for the total state frequencies.
+    total_state_freq_ = (float*) calloc (sizeof(float), num_of_state_);
+
     // Memory allocate for the matrix of transition log prob.
 #ifdef BIGRAM
     transition_lprob_ = (float**) calloc (sizeof(float*), num_of_state_);
@@ -192,6 +201,19 @@ protected:
     num_of_state_ = num_of_state;
   }
 
+private:
+  void convertTagToTagId(const garnut::Ngram<T_State>& tags, garnut::Ngram<unsigned int>& tag_ids)
+  {
+    for (size_t i=0; i<tags.size(); ++i)
+    {
+      unsigned int tag_id = static_cast<unsigned int>(tags[i]);
+      tag_ids.push_back(tag_id);
+      total_state_freq_[tag_id] += 1.0f;
+    }
+  }
+
+  //calculateTagSequenceProb(unsigned int k, 
+
 protected:
   unsigned int n_;
   unsigned int num_of_word_;
@@ -202,6 +224,8 @@ protected:
   std::vector<T_State> id2state_;
 
 protected:
+  float* total_state_freq_;
+
 #ifdef BIGRAM
   float** transition_lprob_;
 #endif

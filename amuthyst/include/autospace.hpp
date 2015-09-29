@@ -19,7 +19,8 @@ enum EmptySpaceTag
 {
   AfterNonSpace,
   AfterSpace,
-  BeginOrEnd,
+  SentenceBegin,
+  SentenceEnd,
   NumOfTags
 };
 
@@ -32,10 +33,16 @@ public:
 
 public:
   bool train(const std::string& train_corpus_path);
+  bool test(const std::string& test_corpus_path);
 
 private:
   bool assignIDs(const std::string& train_corpus_path);
-  void findSpaceTag(const std::wstring& src, garnut::Ngram<std::wstring::value_type>& letters, garnut::Ngram<EmptySpaceTag>& tags);
+  void assginStartEndChar();
+  void findSpaceTag(const std::wstring& src,
+                    garnut::Ngram<std::wstring::value_type>& letters,
+                    garnut::Ngram<EmptySpaceTag>& tags);
+  void viterbiSearch(const garnut::Ngram<std::wstring::value_type>& words,
+                     garnut::Ngram<EmptySpaceTag>& hidden_state);
 
 private:
   unsigned int n_;
