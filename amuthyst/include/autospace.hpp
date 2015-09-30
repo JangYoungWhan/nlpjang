@@ -17,10 +17,12 @@ namespace nlp { namespace jang { namespace amuthyst {
 
 enum EmptySpaceTag
 {
-  AfterNonSpace,
-  AfterSpace,
   SentenceBegin,
   SentenceEnd,
+  WordBegin,
+  WordIng,
+  //SpaceBegin,
+  //SpaceIng,  
   NumOfTags
 };
 
@@ -37,12 +39,17 @@ public:
 
 private:
   bool assignIDs(const std::string& train_corpus_path);
+  void refineSentence(std::wstring& target) const;
   void assginStartEndChar();
   void findSpaceTag(const std::wstring& src,
                     garnut::Ngram<std::wstring::value_type>& letters,
                     garnut::Ngram<EmptySpaceTag>& tags);
   void viterbiSearch(const garnut::Ngram<std::wstring::value_type>& words,
                      garnut::Ngram<EmptySpaceTag>& hidden_state);
+
+private:
+  float transition_lprob(int v, int w, int u) const;
+  float emission_lprob(int x_k, int v) const;
 
 private:
   unsigned int n_;

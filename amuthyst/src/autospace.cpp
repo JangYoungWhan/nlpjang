@@ -15,6 +15,8 @@
 
 #include <fstream>
 #include <limits>
+#include <list>
+#include <set>
 
 namespace nlp { namespace jang { namespace amuthyst {
 
@@ -37,6 +39,7 @@ AutoSpacer::~AutoSpacer()
 
 bool AutoSpacer::train(const std::string& train_corpus_path)
 {
+  printf("Training... : %s\n\n", train_corpus_path.c_str());
   if (!assignIDs(train_corpus_path))
     return false;
 
@@ -44,15 +47,15 @@ bool AutoSpacer::train(const std::string& train_corpus_path)
 
   prepareLogProbMatrix();
 
-  std::ifstream ofs(train_corpus_path);
+  std::ifstream ifs(train_corpus_path);
 
-  if (ofs.fail())
+  if (ifs.fail())
   {
     return false;
   }
 
   std::string line;
-  while (std::getline(ofs, line))
+  while (std::getline(ifs, line))
   {
     if (line.length() == 0)
       continue;
@@ -72,38 +75,111 @@ bool AutoSpacer::train(const std::string& train_corpus_path)
   }
   trainHMM();
 
+  ifs.close();
+
   return true;
+}
+
+void makeTestInput(const std::wstring& src, std::wstring& dst)
+{
+  for (auto& wch : src)
+  {
+    if (wch == L' ')
+      continue;
+
+    dst.push_back(wch);
+  }
+}
+
+void makeTestOutput(const std::wstring& src, garnut::Ngram<EmptySpaceTag>& state,
+                    std::wstring& dst)
+{
+  dst.push_back(src[0]);
+  for (size_t i=1; i<state.size(); ++i)
+  {
+    switch (state[i])
+    {
+    case EmptySpaceTag::WordBegin:
+      dst.push_back(L' ');
+      dst.push_back(src[i]);
+      break;
+    case EmptySpaceTag::WordIng:
+      dst.push_back(src[i]);
+      break;
+    default:
+      break;
+    }
+  }
 }
 
 bool AutoSpacer::test(const std::string& test_corpus_path)
 {
-  const std::wstring sent(L"나는학교에갔다.");
-  
-  garnut::Ngram<std::wstring::value_type> letters;
-  garnut::Ngram<EmptySpaceTag> tags;
+  printf("Testing... : %s\n\n", test_corpus_path.c_str());
+  std::ifstream ifs(test_corpus_path);
 
-  garnut::SentenceDealer::convertSentenceToLetterNgram(sent, letters);
-  letters.attachTags(0x01, 0x02, n_);
+  if (ifs.fail())
+  {
+    return false;
+  }
+  std::ofstream ofs("C:/dummy/as.txt");
+  int total = 0, correct = 0;
+  std::string line;
+  while (std::getline(ifs, line))
+  {
+    std::wstring wline, test_input, test_output;
+    garnut::EncodingConverter::convertUtf8ToUnicode(line, wline);
+    //refineSentence(wline);
+    makeTestInput(wline, test_input);
 
-  viterbiSearch(letters, tags);
+    garnut::Ngram<std::wstring::value_type> letters;
+    garnut::Ngram<EmptySpaceTag> tags;
+
+    garnut::SentenceDealer::convertSentenceToLetterNgram(test_input, letters);
+    letters.attachTags(0x01, 0x02, n_);
+    viterbiSearch(letters, tags);
+
+    makeTestOutput(test_input, tags, test_output);
+
+    std::vector<std::wstring> tokens, result;
+    garnut::splitStringToNgram<std::wstring>(wline, tokens, L" ");
+    garnut::splitStringToNgram<std::wstring>(test_output, result, L" ");
+    std::set<std::wstring> token_set(tokens.begin(), tokens.end());
+
+    //if (wline == test_output)
+    for (auto& r : result)
+    {
+      if (token_set.find(r) != token_set.end())
+        correct++;
+    }
+    total += tokens.size();
+    line.clear();
+    garnut::EncodingConverter::convertUnicodeToUtf8(test_output, line);
+    ofs << line << std::endl;
+  }  
+
+  //ofs.close();
+  ifs.close();  
+
+  printf("correct:%d / total:%d\naccuracy:%f%\n", correct, total, ((float)correct/total)*100);
 
   return true;
 }
 
 bool AutoSpacer::assignIDs(const std::string& train_corpus_path)
 {
-  std::ifstream ofs(train_corpus_path);
+  std::ifstream ifs(train_corpus_path);
 
-  if (ofs.fail())
+  if (ifs.fail())
   {
     return false;
   }
 
   std::string line;
-  while (std::getline(ofs, line))
+  while (std::getline(ifs, line))
   {
     std::wstring wline;
     garnut::EncodingConverter::convertUtf8ToUnicode(line, wline);
+    //refineSentence(wline);
 
     for (auto& wch : wline)
     {
@@ -114,9 +190,19 @@ bool AutoSpacer::assignIDs(const std::string& train_corpus_path)
     }
   }
 
+  setNumOfWord(word2id_.size());
   setNumOfState(EmptySpaceTag::NumOfTags);
 
   return true;
+}
+
+void AutoSpacer::refineSentence(std::wstring& target) const
+{
+  for (auto it=target.begin(); it!=target.end(); ++it)
+  {
+    if (L'0' <= *it && *it <= L'9')
+      *it = L'0';
+  }
 }
 
 void AutoSpacer::assginStartEndChar()
@@ -134,7 +220,7 @@ void AutoSpacer::findSpaceTag(const std::wstring& src, garnut::Ngram<std::wstrin
     letters.push_back(0x01);
   }
 
-  tags.push_back(EmptySpaceTag::AfterSpace);
+  tags.push_back(EmptySpaceTag::WordBegin);
   letters.push_back(src[0]);
 
   for (size_t i=1; i<src.length(); ++i)
@@ -146,9 +232,9 @@ void AutoSpacer::findSpaceTag(const std::wstring& src, garnut::Ngram<std::wstrin
     letters.push_back(src[i]);
 
     if(src[i-1] == L' ')
-      tags.push_back(EmptySpaceTag::AfterSpace);
+      tags.push_back(EmptySpaceTag::WordBegin);
     else
-      tags.push_back(EmptySpaceTag::AfterNonSpace);
+      tags.push_back(EmptySpaceTag::WordIng);
   }
   
   // Insert end character and symbol.
@@ -167,14 +253,23 @@ void AutoSpacer::viterbiSearch(const garnut::Ngram<std::wstring::value_type>& wo
   pi_table = (float***) calloc (sizeof(float**), words.size());
   pi_table[0] = (float**) calloc (sizeof(float*), words.size() * num_of_state_);
   pi_table[0][0] = (float*) calloc (sizeof(float), words.size() * num_of_state_ * num_of_state_);
+
+  // Back pointer argmax pi for the backtracking.
+  EmptySpaceTag*** bp_pi;
+  bp_pi = (EmptySpaceTag***) malloc (sizeof(EmptySpaceTag**) * words.size());
+  bp_pi[0] = (EmptySpaceTag**) malloc (sizeof(EmptySpaceTag*) * words.size() * num_of_state_);
+  bp_pi[0][0] = (EmptySpaceTag*) malloc (sizeof(EmptySpaceTag) * words.size() * num_of_state_ * num_of_state_);
+
   for (unsigned int i=1; i<words.size(); ++i)
   {
     pi_table[i] = pi_table[i-1] + num_of_state_;
+    bp_pi[i] = bp_pi[i-1] + num_of_state_;
 
   }
   for (unsigned int j=1; j<words.size() * num_of_state_; ++j)
   {
     pi_table[0][j] = pi_table[0][j-1] + num_of_state_;
+    bp_pi[0][j] = bp_pi[0][j-1] + num_of_state_;
   }
 
   for (unsigned int i=0; i<words.size(); ++i)
@@ -202,54 +297,98 @@ void AutoSpacer::viterbiSearch(const garnut::Ngram<std::wstring::value_type>& wo
     }
   }*/
 
-  size_t k = n_-1;
+  size_t k = 1;
   int w, u, v;
-  w = SentenceBegin;
-  u = SentenceBegin;
+  w = static_cast<int>(EmptySpaceTag::SentenceBegin);
+  u = static_cast<int>(EmptySpaceTag::SentenceBegin);
 
   pi_table[k][w][u] = 0.0f;
-  for (k=k+1; k<words.size()-(n_-1); ++k)
+  //bp_pi[k][w][u] = EmptySpaceTag::WordBegin;
+  int last_u = 0, last_v = 0;
+  for (k=k+1; k<words.size(); ++k)
   {
     for (v=0; v<EmptySpaceTag::NumOfTags; ++v)
     {
-      float max_pi = -std::numeric_limits<float>::max();
-      int max_w = 0;
-      for (w=0; w<EmptySpaceTag::NumOfTags; ++w)
+      for (u=0; u<EmptySpaceTag::NumOfTags; ++u)
       {
-        unsigned int x_k;
-        auto find_result = word2id_.find(words[k]);
-        if (find_result != word2id_.end())
+        float max_pi = -std::numeric_limits<float>::max();
+        int max_w = static_cast<int>(EmptySpaceTag::SentenceBegin);
+        for (w=0; w<EmptySpaceTag::NumOfTags; ++w)
         {
-          x_k = find_result->second;
-        }
-        else
-        {
-          std::cout << "OOV occured!!" << std::endl;
-          x_k = 0; // OOV
-        }
+          unsigned int x_k;
+          float e;
+          auto find_result = word2id_.find(words[k]);
+          if (find_result != word2id_.end())
+          {
+            x_k = find_result->second;
+            e = emission_lprob(x_k, v);
+          }
+          else // OOV
+          {
+            e = log(1.0f / sum_of_state_freq_);
+          }
 
-        
-        float pi = pi_table[k-1][w][u] + transition_lprob_[w][u][v] + emission_lprob_[x_k][u];
-        if (pi > max_pi)
-        {
-          max_pi = pi;
-          max_w = w;
-        }
 
-        printf("pi[%d][%d][%d] + q[%d][%d][%d] + e[%d][%d]\n", k-1,w,u,w,u,v,x_k,u);
-        //printf("= %e + %e + %e\n", pi_table[k-1][w][u], transition_lprob_[w][u][v], emission_lprob_[x_k][u]);
-        printf("pi=%e / max_pi=%e\n", pi, max_pi);
+          float pi = pi_table[k-1][w][u] + transition_lprob(v, w, u) + e;
+          if (pi > max_pi)
+          {
+            max_pi = pi;
+            max_w = w;
+            last_u = u;
+            last_v = v;
+          }
+
+          //printf("pi[%d][%d][%d] + q[%d][%d][%d] + e[%d][%d]\n", k-1,w,u,w,u,v,x_k,u);
+          //printf("= %e + %e + %e\n", pi_table[k-1][w][u], transition_lprob(v, w, u), e);
+          //printf("pi=%e / max_pi=%e\n", pi, max_pi);
+        }
+        pi_table[k][u][v] = max_pi;
+        bp_pi[k][last_u][last_v] = static_cast<EmptySpaceTag>(max_w);
       }
-      pi_table[k][u][v] = max_pi;
     }
-
-
   }
 
+  std::list<int> bp_list;
+  for (k=k-1; k>n_; --k)
+  {
+    int prev_w = bp_pi[k][last_u][last_v];
+
+    bp_list.push_front(prev_w);
+
+    last_v = last_u;
+    last_u = prev_w;
+  }
+
+  for (auto& bp : bp_list)
+  {
+    hidden_state.push_back(static_cast<EmptySpaceTag>(bp));
+  }
+
+  // test
+  /*
+  for (auto& bp : bp_list)
+    std::cout << bp << " ";
+  std::cout << std::endl;*/
+
+  free(bp_pi[0][0]);
+  free(bp_pi[0]);
+  free(bp_pi);
 
   free(pi_table[0][0]);
   free(pi_table[0]);
   free(pi_table);
+}
+
+inline
+float AutoSpacer::transition_lprob(int v, int w, int u) const
+{
+  return transition_lprob_[w][u][v];
+}
+
+inline
+float AutoSpacer::emission_lprob(int x_k, int v) const
+{
+  return emission_lprob_[v][x_k];
 }
 
 

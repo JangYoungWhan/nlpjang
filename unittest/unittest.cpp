@@ -23,8 +23,10 @@ int main(int argc, char* argv[])
 {
 #if 1 // auto spacer
   nlp::jang::amuthyst::AutoSpacer autoSpacer(3);
-  autoSpacer.train("C:/dummy/kor_small.txt");
-  autoSpacer.test("");
+  autoSpacer.train("C:/dummy/kor_news_2007_300K_tr.txt");
+  autoSpacer.test("C:/dummy/kor_news_2007_300K_te.txt");
+  //autoSpacer.train("C:/dummy/test.txt");
+  //autoSpacer.test("C:/dummy/test.txt");
 #endif
 
 #if 0 // sentence dealer

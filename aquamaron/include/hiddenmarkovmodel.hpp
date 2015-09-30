@@ -23,7 +23,7 @@ class HiddenMarkovModel
 {
 public:
   HiddenMarkovModel()
-    :n_(3), num_of_word_(0), num_of_state_(0)
+    :n_(3), num_of_word_(0), num_of_state_(0), sum_of_word_freq_(0), sum_of_state_freq_(0)
   {
     total_state_freq_ = nullptr;
     transition_lprob_ = nullptr;
@@ -31,7 +31,7 @@ public:
   }
 
   HiddenMarkovModel(unsigned int n)
-    :n_(n), num_of_word_(0), num_of_state_(0)
+    :n_(n), num_of_word_(0), num_of_state_(0), sum_of_word_freq_(0), sum_of_state_freq_(0)
   {
     total_state_freq_ = nullptr;
     transition_lprob_ = nullptr;
@@ -63,7 +63,7 @@ public:
     convertTagToTagId(tags, tag_ids);
 #ifdef TRIGRAM
     for (size_t i=2; i<tag_ids.size(); ++i)
-    {      
+    {
       transition_lprob_[tag_ids[i-2]][tag_ids[i-1]][tag_ids[i]] += 1.0f;
     }
 #endif
@@ -79,7 +79,9 @@ public:
       unsigned int word_id = word2id_.find(words[i])->second;
       unsigned int tag_id = static_cast<unsigned int>(tags[i]);
 
-      emission_lprob_[word_id][tag_id] += 1.0;
+      emission_lprob_[tag_id][word_id] += 1.0;
+      ++sum_of_word_freq_;
+      ++sum_of_state_freq_;
     }
   }
 
@@ -89,31 +91,38 @@ public:
     {
       for (unsigned int j=0; j<num_of_state_; ++j)
       {
+        float total_freq = 0.0f;
+
         for (unsigned int k=0; k<num_of_state_; ++k)
         {
-          if (transition_lprob_[i][j][k] < 0.9)
+          total_freq += transition_lprob_[i][j][k];
+        }
+
+        for (unsigned int k=0; k<num_of_state_; ++k)
+        {
+          if (transition_lprob_[i][j][k] < 0.9f)
           {
-            transition_lprob_[i][j][k] = 1.0 / total_state_freq_[k];
+            transition_lprob_[i][j][k] = log(1.0f / sum_of_state_freq_);
           }
           else
           {
-            transition_lprob_[i][j][k] = log(transition_lprob_[i][j][k] / total_state_freq_[k]);
+            transition_lprob_[i][j][k] = log(transition_lprob_[i][j][k] / total_freq);
           }
         }
       }
     }
 
-    for (unsigned int i=0; i<num_of_word_; ++i)
+    for (unsigned int i=0; i<num_of_state_; ++i)
     {
-      for (unsigned int j=0; j<num_of_state_; ++j)
+      for (unsigned int j=0; j<num_of_word_; ++j)
       {
-        if (emission_lprob_[i][j] < 0.9)
+        if (emission_lprob_[i][j] < 0.9f)
         {
-          emission_lprob_[i][j] = 0.01 / total_state_freq_[j];
+          emission_lprob_[i][j] = log(0.01f / total_state_freq_[i]);
         }
         else
         {
-          emission_lprob_[i][j] = log(emission_lprob_[i][j] / total_state_freq_[j]);
+          emission_lprob_[i][j] = log(emission_lprob_[i][j] / total_state_freq_[i]);
         }
       }
     }
@@ -123,7 +132,7 @@ protected:
   void prepareLogProbMatrix()
   {
     // Memory allocate for the total state frequencies.
-    total_state_freq_ = (float*) calloc (sizeof(float), num_of_state_);
+    total_state_freq_ = (int*) calloc (sizeof(int), num_of_state_);
 
     // Memory allocate for the matrix of transition log prob.
 #ifdef BIGRAM
@@ -151,11 +160,11 @@ protected:
 #endif
 
     // Memory allocate for the matrix of emission log prob.
-    emission_lprob_ = (float**) calloc (sizeof(float*), num_of_word_);
-    emission_lprob_[0] = (float*) calloc (sizeof(float), num_of_word_ * num_of_state_);
-    for(unsigned int i=1; i<num_of_word_; ++i)
+    emission_lprob_ = (float**) calloc (sizeof(float*), num_of_state_);
+    emission_lprob_[0] = (float*) calloc (sizeof(float), num_of_state_ * num_of_word_);
+    for(unsigned int i=1; i<num_of_state_; ++i)
     {
-      emission_lprob_[i] = emission_lprob_[i-1] + num_of_state_;
+      emission_lprob_[i] = emission_lprob_[i-1] + num_of_word_;
     }
   }
 
@@ -208,7 +217,7 @@ private:
     {
       unsigned int tag_id = static_cast<unsigned int>(tags[i]);
       tag_ids.push_back(tag_id);
-      total_state_freq_[tag_id] += 1.0f;
+      ++total_state_freq_[tag_id];
     }
   }
 
@@ -224,10 +233,12 @@ protected:
   std::vector<T_State> id2state_;
 
 protected:
-  float* total_state_freq_;
+  int sum_of_word_freq_;
+  int sum_of_state_freq_;
+  int* total_state_freq_;  
 
 #ifdef BIGRAM
-  float** transition_lprob_;
+  float** transition_prob_;
 #endif
 
 #ifdef TRIGRAM
