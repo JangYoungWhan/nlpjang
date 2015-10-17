@@ -6,17 +6,17 @@
 #  Copyright 2015, YW. Jang, All rights reserved.
 #
 
-cmake_minimum_required (VERSION 3.2)
+cmake_minimum_required (VERSION 2.8)
 
 project (unittest)
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU") # using gcc
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU") # using gcc
   if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8)
     message(FATAL_ERROR "GCC version must be at least 4.8!")
   else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fexceptions -Wall")
   endif()
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC") # using Visual Studio C++
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC") # using Visual Studio C++
   if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 17)
     message(FATAL_ERROR "MSVC version must be at least VC110!")
   else()
