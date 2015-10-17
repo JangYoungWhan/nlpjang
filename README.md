@@ -1,4 +1,6 @@
 # nlpjang
+[![Build Status](https://travis-ci.org/JangYoungWhan/nlpjang.svg?branch=master)](https://travis-ci.org/JangYoungWhan/nlpjang)]
+
 nlpjang provides a set of C++ natural language processing tools.
 It supports multi-platforms and the goal is to make it easy to use NLP algorithms.
 
