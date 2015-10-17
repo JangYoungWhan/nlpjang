@@ -364,11 +364,11 @@ void AutoSpacer::viterbiSearch(const garnut::Ngram<std::wstring::value_type>& wo
     hidden_state.push_back(static_cast<EmptySpaceTag>(bp));
   }
 
-  // test
-  /*
+#ifdef _DEBUG
   for (auto& bp : bp_list)
     std::cout << bp << " ";
-  std::cout << std::endl;*/
+  std::cout << std::endl;
+#endif
 
   free(bp_pi[0][0]);
   free(bp_pi[0]);
