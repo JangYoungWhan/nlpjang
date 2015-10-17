@@ -15,6 +15,7 @@
 
 #include <map>
 #include <vector>
+#include <cmath>
 
 namespace nlp { namespace jang { namespace aquamaron {
 
@@ -247,8 +248,11 @@ protected:
   float** emission_lprob_;
 
 protected:
-  const float NOT_OCCURED_FREQ_ = 0.5f;
+  static const float NOT_OCCURED_FREQ_;
 };
+
+template <typename T_Word, typename T_State>
+const float HiddenMarkovModel<T_Word, T_State>::NOT_OCCURED_FREQ_ = 0.5f;
 
 } } } // nlp::jang::aquamaron
 
