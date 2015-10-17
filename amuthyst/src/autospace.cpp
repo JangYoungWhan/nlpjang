@@ -325,7 +325,7 @@ void AutoSpacer::viterbiSearch(const garnut::Ngram<std::wstring::value_type>& wo
           }
           else // OOV
           {
-            e = log(1.0f / sum_of_state_freq_);
+            e = logf(NOT_OCCURED_FREQ_ / sum_of_state_freq_);
           }
 
 

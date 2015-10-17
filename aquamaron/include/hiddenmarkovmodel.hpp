@@ -100,13 +100,13 @@ public:
 
         for (unsigned int k=0; k<num_of_state_; ++k)
         {
-          if (transition_lprob_[i][j][k] < 0.9f)
+          if (transition_lprob_[i][j][k] < NOT_OCCURED_FREQ_)
           {
-            transition_lprob_[i][j][k] = log(1.0f / sum_of_state_freq_);
+            transition_lprob_[i][j][k] = logf(NOT_OCCURED_FREQ_ / sum_of_state_freq_);
           }
           else
           {
-            transition_lprob_[i][j][k] = log(transition_lprob_[i][j][k] / total_freq);
+            transition_lprob_[i][j][k] = logf(transition_lprob_[i][j][k] / total_freq);
           }
         }
       }
@@ -116,13 +116,13 @@ public:
     {
       for (unsigned int j=0; j<num_of_word_; ++j)
       {
-        if (emission_lprob_[i][j] < 0.9f)
+        if (emission_lprob_[i][j] < NOT_OCCURED_FREQ_)
         {
-          emission_lprob_[i][j] = log(0.01f / total_state_freq_[i]);
+          emission_lprob_[i][j] = logf(NOT_OCCURED_FREQ_ / total_state_freq_[i]);
         }
         else
         {
-          emission_lprob_[i][j] = log(emission_lprob_[i][j] / total_state_freq_[i]);
+          emission_lprob_[i][j] = logf(emission_lprob_[i][j] / total_state_freq_[i]);
         }
       }
     }
@@ -245,6 +245,9 @@ protected:
   float*** transition_lprob_;
 #endif
   float** emission_lprob_;
+
+protected:
+  const float NOT_OCCURED_FREQ_ = 0.5f;
 };
 
 } } } // nlp::jang::aquamaron
