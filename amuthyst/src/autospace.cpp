@@ -18,6 +18,10 @@
 #include <list>
 #include <set>
 
+#ifdef REFINE_SENTENCE
+#include <cctype> // using for ispunct
+#endif
+
 namespace nlp { namespace jang { namespace amuthyst {
 
 AutoSpacer::AutoSpacer()
@@ -126,9 +130,18 @@ bool AutoSpacer::test(const std::string& test_corpus_path)
   std::string line;
   while (std::getline(ifs, line))
   {
-    std::wstring wline, test_input, test_output;
+    std::wstring wline, test_input;
     garnut::EncodingConverter::convertUtf8ToUnicode(line, wline);
-    //refineSentence(wline);
+
+#ifdef REFINE_SENTENCE
+    std::wstring origin_test_input;
+    makeTestInput(wline, origin_test_input);
+
+    // Replace insignificant letters.
+    refineSentence(wline);
+#endif
+
+    // Remove spaces,
     makeTestInput(wline, test_input);
 
     garnut::Ngram<std::wstring::value_type> letters;
@@ -138,14 +151,18 @@ bool AutoSpacer::test(const std::string& test_corpus_path)
     letters.attachTags(0x01, 0x02, n_);
     viterbiSearch(letters, tags);
 
+    std::wstring test_output;
+#ifdef REFINE_SENTENCE
+    makeTestOutput(origin_test_input, tags, test_output);
+#else
     makeTestOutput(test_input, tags, test_output);
+#endif
 
     std::vector<std::wstring> tokens, result;
     garnut::splitStringToNgram<std::wstring>(wline, tokens, L" ");
     garnut::splitStringToNgram<std::wstring>(test_output, result, L" ");
     std::set<std::wstring> token_set(tokens.begin(), tokens.end());
 
-    //if (wline == test_output)
     for (auto& r : result)
     {
       if (token_set.find(r) != token_set.end())
@@ -157,7 +174,7 @@ bool AutoSpacer::test(const std::string& test_corpus_path)
     ofs << line << std::endl;
   }  
 
-  //ofs.close();
+  ofs.close();
   ifs.close();  
 
   printf("correct:%d / total:%d\naccuracy:%f%\n", correct, total, ((float)correct/total)*100);
@@ -179,7 +196,9 @@ bool AutoSpacer::assignIDs(const std::string& train_corpus_path)
   {
     std::wstring wline;
     garnut::EncodingConverter::convertUtf8ToUnicode(line, wline);
-    //refineSentence(wline);
+#ifdef REFINE_SENTENCE
+    refineSentence(wline);
+#endif
 
     for (auto& wch : wline)
     {
@@ -202,6 +221,8 @@ void AutoSpacer::refineSentence(std::wstring& target) const
   {
     if (L'0' <= *it && *it <= L'9')
       *it = L'0';
+    else if (ispunct(static_cast<int>(*it)))
+      *it = L'*';
   }
 }
 
