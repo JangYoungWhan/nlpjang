@@ -21,6 +21,7 @@ enum EmptySpaceTag
   SentenceEnd,
   WordBegin,
   WordIng,
+  WordEnd,
   //SpaceBegin,
   //SpaceIng,  
   NumOfTags

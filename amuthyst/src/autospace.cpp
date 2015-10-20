@@ -110,6 +110,10 @@ void makeTestOutput(const std::wstring& src, garnut::Ngram<EmptySpaceTag>& state
     case EmptySpaceTag::WordIng:
       dst.push_back(src[i]);
       break;
+    case EmptySpaceTag::WordEnd:
+      dst.push_back(src[i]);
+      dst.push_back(L' ');
+      break;
     default:
       break;
     }
@@ -244,7 +248,7 @@ void AutoSpacer::findSpaceTag(const std::wstring& src, garnut::Ngram<std::wstrin
   tags.push_back(EmptySpaceTag::WordBegin);
   letters.push_back(src[0]);
 
-  for (size_t i=1; i<src.length(); ++i)
+  for (size_t i=1; i<src.length()-1; ++i)
   {
     // Skip empty space.
     if(src[i] == L' ')
@@ -254,6 +258,8 @@ void AutoSpacer::findSpaceTag(const std::wstring& src, garnut::Ngram<std::wstrin
 
     if(src[i-1] == L' ')
       tags.push_back(EmptySpaceTag::WordBegin);
+    else if (src[i+1] == L' ')
+      tags.push_back(EmptySpaceTag::WordEnd);
     else
       tags.push_back(EmptySpaceTag::WordIng);
   }
