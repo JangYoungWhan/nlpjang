@@ -13,6 +13,8 @@
 
 #include <string>
 
+//#define REFINE_SENTENCE
+
 namespace nlp { namespace jang { namespace amuthyst {
 
 enum EmptySpaceTag

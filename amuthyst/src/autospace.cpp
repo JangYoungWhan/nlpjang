@@ -130,7 +130,7 @@ bool AutoSpacer::test(const std::string& test_corpus_path)
     return false;
   }
   std::ofstream ofs("C:/dummy/as.txt");
-  int total = 0, correct = 0;
+  int total_syllable = 0, total_sentence = 0, correct_syllable = 0, correct_sentence = 0;
   std::string line;
   while (std::getline(ifs, line))
   {
@@ -170,9 +170,13 @@ bool AutoSpacer::test(const std::string& test_corpus_path)
     for (auto& r : result)
     {
       if (token_set.find(r) != token_set.end())
-        correct++;
+        correct_syllable++;
     }
-    total += tokens.size();
+    total_syllable += tokens.size();
+
+    if (test_input == test_output)
+      correct_sentence++;
+    total_sentence++;
     line.clear();
     garnut::EncodingConverter::convertUnicodeToUtf8(test_output, line);
     ofs << line << std::endl;
@@ -181,7 +185,8 @@ bool AutoSpacer::test(const std::string& test_corpus_path)
   ofs.close();
   ifs.close();  
 
-  printf("correct:%d / total:%d\naccuracy:%f%\n", correct, total, ((float)correct/total)*100);
+  printf("syllable : correct:%d / total:%d\naccuracy:%f%\n", correct_syllable, total_syllable, ((float)correct_syllable/total_syllable)*100);
+  printf("sentence : correct:%d / total:%d\naccuracy:%f%\n", correct_sentence, total_sentence, ((float)correct_sentence/total_sentence)*100);
 
   return true;
 }
