@@ -6,28 +6,37 @@
  *  Copyright 2015, YW. Jang, All rights reserved.
  */
 
+#ifdef RUN_AUTO_SPACE
 #include "amuthyst/include/autospace.hpp"
 #include "aquamaron/include/hiddenmarkovmodel.hpp"
-//#include "progressbar.hpp"
-//#include "sentencedealer.hpp"
-//#include "encconv.hpp"
-//#include "ngram.hpp"
+#endif
 
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <vector>
-#include <map>
+#ifdef RUN_SENTENCE_DEALER
+#include "sentencedealer.hpp"
+#endif
+
+#ifdef RUN_NGRAM_USAGE
+#include "ngram.hpp"
+#endif
+
+#ifdef RUN_PROGRESS_BAR
+#include "progressbar.hpp"
+#endif
+
+#ifdef RUN_ENCODING_CONVERTER
+#include "encconv.hpp"
+#endif
 
 int main(int argc, char* argv[])
 {
-#if 1 // auto spacer
+
+#ifdef RUN_AUTO_SPACE
   nlp::jang::amuthyst::AutoSpacer autoSpacer(3);
   autoSpacer.train("C:/dummy/tr.txt");
   autoSpacer.test("C:/dummy/te.txt");
 #endif
 
-#if 0 // sentence dealer
+#ifdef RUN_SENTENCE_DEALER
   const std::string str("hello  world !");
   const std::wstring wstr(L"hello world !");
   const std::string tokens;
@@ -38,11 +47,9 @@ int main(int argc, char* argv[])
   //nlp::jang::garnut::SentenceDealer::insertStartEndTags(str, split_result, 3);
   std::vector<nlp::jang::garnut::Ngram<std::string>> split_result;
   nlp::jang::garnut::SentenceDealer::convertSentenceToWordNgram(str, split_result, 3);
-
 #endif
 
-
-#if 0 // check ngram
+#ifdef RUN_NGRAM_USAGE
   nlp::jang::garnut::Ngram<std::string> ngram(3);
 
   ngram.push_back("hello");
@@ -57,14 +64,15 @@ int main(int argc, char* argv[])
   std::cout << ngram << std::endl;
 #endif
 
-#if 0 // test for progressbar
+#ifdef RUN_PROGRESS_BAR
   int size = 4;
   for (int i=0; i<size; ++i)
     nlp::jang::garnut::ProgressBar<int>::dispalyPrgressBar(i, size);
   std::cout << std::endl;
 #endif
 
-#if 0 // test for unicode to utf8 converter.
+#ifdef RUN_ENCODING_CONVERTER
+  // test for unicode tu utf8 converter.
   std::wstring src_unicode_bmp;
   src_unicode_bmp.push_back(0x0061); // 1-byte
   src_unicode_bmp.push_back(0x04E8); // 2-byte
@@ -89,9 +97,8 @@ int main(int argc, char* argv[])
   {
     printf("%02X ", static_cast<unsigned char>(*c));
   } puts("\n");
-#endif
-
-#if 0 // test for utf8 to unicode converter.
+  
+  // test for utf8 to unicode converter.
   std::string src_utf8_bmp = "hi"; // 1-byte
 
   src_utf8_bmp.push_back(0xD0); // 2-byte
@@ -109,9 +116,7 @@ int main(int argc, char* argv[])
   src_utf8_bmp.push_back(0xB0);
   src_utf8_bmp.push_back(0x80);
 
-  std::string utf8_41byte;
-
-  std::wstring dst;
+  dst.clear();
   puts("before : ");
   for (auto c=src_utf8_bmp.begin(); c!=src_utf8_bmp.end(); ++c)
   {
