@@ -315,27 +315,12 @@ void AutoSpacer::viterbiSearch(const garnut::Ngram<std::wstring::value_type>& wo
     }
   }
 
-  // test
-  /*
-  for (unsigned int i=0; i<num_of_state_; ++i)
-  {
-    for (unsigned int j=0; j<num_of_state_; ++j)
-    {
-      for (unsigned int k=0; k<num_of_state_; ++k)
-      {
-        if (transition_lprob_[i][j][k] > -std::numeric_limits<float>::max())
-          printf("q[%d][%d][%d] = %e\n", i, j, k, transition_lprob_[i][j][k]);
-      }
-    }
-  }*/
-
   size_t k = 1;
   int w, u, v;
   w = static_cast<int>(EmptySpaceTag::SentenceBegin);
   u = static_cast<int>(EmptySpaceTag::SentenceBegin);
 
   pi_table[k][w][u] = 0.0f;
-  //bp_pi[k][w][u] = EmptySpaceTag::WordBegin;
   int last_u = 0, last_v = 0;
   for (k=k+1; k<words.size(); ++k)
   {
@@ -359,7 +344,6 @@ void AutoSpacer::viterbiSearch(const garnut::Ngram<std::wstring::value_type>& wo
           {
             e = logf(NOT_OCCURED_FREQ_ / sum_of_state_freq_);
           }
-
 
           float pi = pi_table[k-1][w][u] + transition_lprob(v, w, u) + e;
           if (pi > max_pi)

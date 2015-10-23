@@ -58,8 +58,6 @@ private:
   unsigned int n_;
 };
 
-} // namespace amuthyst
-} // namespace jang
-} // namespace nlp
+} } } // nlp::jang::amuthyst
 
 #endif
