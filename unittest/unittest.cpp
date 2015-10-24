@@ -6,6 +6,13 @@
  *  Copyright 2015, YW. Jang, All rights reserved.
  */
 
+#define RUN_EDIT_DISTANCE
+#ifdef RUN_EDIT_DISTANCE
+#include "garnut/include/editdistance.hpp"
+#include <string>
+#include <iostream>
+#endif
+
 #ifdef RUN_AUTO_SPACE
 #include "amuthyst/include/autospace.hpp"
 #include "aquamaron/include/hiddenmarkovmodel.hpp"
@@ -29,6 +36,14 @@
 
 int main(int argc, char* argv[])
 {
+
+#ifdef RUN_EDIT_DISTANCE
+  std::string str1 = "i am a boy.";
+  std::string str2 = "i am a bay.";
+
+  auto ed = nlp::jang::garnut::EditDistance<std::string>::calculateLevenshteinDistance(str1, str2);
+  std::cout << "E.D. = " << ed << std::endl;
+#endif
 
 #ifdef RUN_AUTO_SPACE
   nlp::jang::amuthyst::AutoSpacer autoSpacer(3);
