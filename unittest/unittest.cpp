@@ -47,8 +47,15 @@ int main(int argc, char* argv[])
 
 #ifdef RUN_AUTO_SPACE
   nlp::jang::amuthyst::AutoSpacer autoSpacer(3);
-  autoSpacer.train("C:/dummy/tr.txt");
-  autoSpacer.test("C:/dummy/te.txt");
+  try
+  {
+    autoSpacer.train("C:/dummy/tr.txt");
+    autoSpacer.test("C:/dummy/te.txt");
+  }
+  catch (const char * e)
+  {
+    std::cerr << e << std::endl;
+  }
 #endif
 
 #ifdef RUN_SENTENCE_DEALER

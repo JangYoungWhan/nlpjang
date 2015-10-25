@@ -53,9 +53,6 @@ private:
 private:
   float transition_lprob(int v, int w, int u) const;
   float emission_lprob(int x_k, int v) const;
-
-private:
-  unsigned int n_;
 };
 
 } } } // nlp::jang::amuthyst

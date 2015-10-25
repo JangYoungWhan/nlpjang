@@ -25,13 +25,13 @@
 namespace nlp { namespace jang { namespace amuthyst {
 
 AutoSpacer::AutoSpacer()
-  :n_(3), HiddenMarkovModel(3)
+  :HiddenMarkovModel(3)
 {
 
 }
 
 AutoSpacer::AutoSpacer(unsigned int n)
-  :n_(n), HiddenMarkovModel(n)
+  :HiddenMarkovModel(n)
 {
 
 }
@@ -45,7 +45,7 @@ bool AutoSpacer::train(const std::string& train_corpus_path)
 {
   printf("Training... : %s\n\n", train_corpus_path.c_str());
   if (!assignIDs(train_corpus_path))
-    return false;
+    throw "Cannot open a training file!\n";
 
   assginStartEndChar();
 
@@ -55,7 +55,7 @@ bool AutoSpacer::train(const std::string& train_corpus_path)
 
   if (ifs.fail())
   {
-    return false;
+    throw "Cannot open a training file!\n";
   }
 
   std::string line;
@@ -127,7 +127,7 @@ bool AutoSpacer::test(const std::string& test_corpus_path)
 
   if (ifs.fail())
   {
-    return false;
+    throw "Cannot open a test file!\n";
   }
   std::ofstream ofs("C:/dummy/as.txt");
   int total_syllable = 0, total_sentence = 0, correct_syllable = 0, correct_sentence = 0;
