@@ -24,7 +24,7 @@ class HiddenMarkovModel
 {
 public:
   HiddenMarkovModel()
-    :n_(3), num_of_word_(0), num_of_state_(0), sum_of_word_freq_(0), sum_of_state_freq_(0)
+    :n_(3), num_of_word_(0), num_of_state_(0), sum_of_state_freq_(0)
   {
     total_state_freq_ = nullptr;
     transition_lprob_ = nullptr;
@@ -32,7 +32,7 @@ public:
   }
 
   HiddenMarkovModel(unsigned int n)
-    :n_(n), num_of_word_(0), num_of_state_(0), sum_of_word_freq_(0), sum_of_state_freq_(0)
+    :n_(n), num_of_word_(0), num_of_state_(0), sum_of_state_freq_(0)
   {
     total_state_freq_ = nullptr;
     transition_lprob_ = nullptr;
@@ -81,7 +81,6 @@ public:
       unsigned int tag_id = static_cast<unsigned int>(tags[i]);
 
       emission_lprob_[tag_id][word_id] += 1.0;
-      ++sum_of_word_freq_;
       ++sum_of_state_freq_;
     }
   }
@@ -234,7 +233,6 @@ protected:
   std::vector<T_State> id2state_;
 
 protected:
-  int sum_of_word_freq_;
   int sum_of_state_freq_;
   int* total_state_freq_;  
 

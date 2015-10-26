@@ -185,8 +185,10 @@ bool AutoSpacer::test(const std::string& test_corpus_path)
   ofs.close();
   ifs.close();  
 
-  printf("syllable : correct:%d / total:%d\naccuracy:%f%\n", correct_syllable, total_syllable, ((float)correct_syllable/total_syllable)*100);
+  printf("\n============================================\n");
+  printf("syllable : correct:%d / total:%d\naccuracy:%f%\n\n", correct_syllable, total_syllable, ((float)correct_syllable/total_syllable)*100);
   printf("sentence : correct:%d / total:%d\naccuracy:%f%\n", correct_sentence, total_sentence, ((float)correct_sentence/total_sentence)*100);
+  printf("\n============================================\n");
 
   return true;
 }
@@ -286,7 +288,7 @@ void AutoSpacer::viterbiSearch(const garnut::Ngram<std::wstring::value_type>& wo
   pi_table[0] = (float**) calloc (sizeof(float*), words.size() * num_of_state_);
   pi_table[0][0] = (float*) calloc (sizeof(float), words.size() * num_of_state_ * num_of_state_);
 
-  // Back pointer argmax pi for the backtracking.
+  // It stores back pointer argmax pi for the backtracking.
   EmptySpaceTag*** bp_pi;
   bp_pi = (EmptySpaceTag***) malloc (sizeof(EmptySpaceTag**) * words.size());
   bp_pi[0] = (EmptySpaceTag**) malloc (sizeof(EmptySpaceTag*) * words.size() * num_of_state_);
@@ -315,6 +317,7 @@ void AutoSpacer::viterbiSearch(const garnut::Ngram<std::wstring::value_type>& wo
     }
   }
 
+  // Ready to viterbi search.
   size_t k = 1;
   int w, u, v;
   w = static_cast<int>(EmptySpaceTag::SentenceBegin);
@@ -354,9 +357,11 @@ void AutoSpacer::viterbiSearch(const garnut::Ngram<std::wstring::value_type>& wo
             last_v = v;
           }
 
-          //printf("pi[%d][%d][%d] + q[%d][%d][%d] + e[%d][%d]\n", k-1,w,u,w,u,v,x_k,u);
-          //printf("= %e + %e + %e\n", pi_table[k-1][w][u], transition_lprob(v, w, u), e);
-          //printf("pi=%e / max_pi=%e\n", pi, max_pi);
+#ifdef _DEBUG
+          printf("pi[%d][%d][%d] + q[%d][%d][%d] + e[%d][%d]\n", k-1,w,u,w,u,v,x_k,u);
+          printf("= %e + %e + %e\n", pi_table[k-1][w][u], transition_lprob(v, w, u), e);
+          printf("pi=%e / max_pi=%e\n", pi, max_pi);
+#endif
         }
         pi_table[k][u][v] = max_pi;
         bp_pi[k][last_u][last_v] = static_cast<EmptySpaceTag>(max_w);
