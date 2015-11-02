@@ -312,7 +312,7 @@ void AutoSpacer::viterbiSearch(const garnut::Ngram<std::wstring::value_type>& wo
     {
       for (unsigned int k=0; k<num_of_state_; ++k)
       {
-        pi_table[i][j][k] = -std::numeric_limits<float>::max();
+        pi_table[i][j][k] = std::numeric_limits<float>::lowest();
       }
     }
   }
@@ -331,7 +331,7 @@ void AutoSpacer::viterbiSearch(const garnut::Ngram<std::wstring::value_type>& wo
     {
       for (u=0; u<EmptySpaceTag::NumOfTags; ++u)
       {
-        float max_pi = -std::numeric_limits<float>::max();
+        float max_pi = std::numeric_limits<float>::lowest();
         int max_w = static_cast<int>(EmptySpaceTag::SentenceBegin);
         for (w=0; w<EmptySpaceTag::NumOfTags; ++w)
         {
