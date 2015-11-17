@@ -6,7 +6,7 @@
  *  Copyright 2015, YW. Jang, All rights reserved.
  */
 
-#define RUN_EDIT_DISTANCE
+#define RUN_AUTO_SPACE
 #ifdef RUN_EDIT_DISTANCE
 #include "garnut/include/editdistance.hpp"
 #include <string>

@@ -130,10 +130,14 @@ bool AutoSpacer::test(const std::string& test_corpus_path)
     throw "Cannot open a test file!\n";
   }
   std::ofstream ofs("C:/dummy/as.txt");
-  int total_syllable = 0, total_sentence = 0, correct_syllable = 0, correct_sentence = 0;
+  int total_syllable = 0, total_word = 0, total_sentence = 0;
+  int correct_syllable = 0, correct_word = 0, correct_sentence = 0;
   std::string line;
   while (std::getline(ifs, line))
   {
+    if (line.length() == 0)
+      continue;
+
     std::wstring wline, test_input;
     garnut::EncodingConverter::convertUtf8ToUnicode(line, wline);
 
@@ -166,14 +170,31 @@ bool AutoSpacer::test(const std::string& test_corpus_path)
     garnut::splitStringToNgram<std::wstring>(wline, tokens, L" ");
     garnut::splitStringToNgram<std::wstring>(test_output, result, L" ");
     std::set<std::wstring> token_set(tokens.begin(), tokens.end());
+    
+    // syllable test
+    garnut::Ngram<std::wstring::value_type> ans_letters;
+    garnut::Ngram<EmptySpaceTag> ans_tags;
+    findSpaceTag(wline, ans_letters, ans_tags);
 
+    for (size_t i=n_-1; i<ans_tags.size()-(n_-1); ++i)
+    {
+      if (tags[i-(n_-1)] == ans_tags[i])
+      {
+        ++correct_syllable;
+      }
+      ++total_syllable;
+    }
+
+    // word test
     for (auto& r : result)
     {
       if (token_set.find(r) != token_set.end())
-        correct_syllable++;
+        correct_word++;
     }
-    total_syllable += tokens.size();
+    total_word += tokens.size();
 
+
+    // sentece test
     if (test_input == test_output)
       correct_sentence++;
     total_sentence++;
@@ -186,8 +207,9 @@ bool AutoSpacer::test(const std::string& test_corpus_path)
   ifs.close();  
 
   printf("\n============================================\n");
-  printf("syllable : correct:%d / total:%d\naccuracy:%f%\n\n", correct_syllable, total_syllable, ((float)correct_syllable/total_syllable)*100);
-  printf("sentence : correct:%d / total:%d\naccuracy:%f%\n", correct_sentence, total_sentence, ((float)correct_sentence/total_sentence)*100);
+  printf("syllable : correct:%d / total:%d\naccuracy :%f%\n\n", correct_syllable, total_syllable, ((float)correct_syllable/total_syllable)*100);
+  printf("word     : correct:%d / total:%d\naccuracy :%f%\n\n", correct_word, total_word, ((float)correct_word/total_word)*100);
+  printf("sentence : correct:%d / total:%d\naccuracy :%f%\n", correct_sentence, total_sentence, ((float)correct_sentence/total_sentence)*100);
   printf("\n============================================\n");
 
   return true;
@@ -255,7 +277,7 @@ void AutoSpacer::findSpaceTag(const std::wstring& src, garnut::Ngram<std::wstrin
   tags.push_back(EmptySpaceTag::WordBegin);
   letters.push_back(src[0]);
 
-  for (size_t i=1; i<src.length()-1; ++i)
+  for (size_t i=1; i<src.length(); ++i)
   {
     // Skip empty space.
     if(src[i] == L' ')
