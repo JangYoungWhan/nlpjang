@@ -5,12 +5,12 @@ language: cpp
 compiler: gcc
 
 env:
-  - CMAKE_VERSION=cmake-3.3.2
+  - CMAKE_VERSION=cmake-3.4.0
 
 before_install:
   # Install latest cmake
   - sudo apt-get remove cmake
-  - wget http://www.cmake.org/files/v3.3/$CMAKE_VERSION.tar.gz
+  - wget --no-check-certificate https://www.cmake.org/files/v3.4/$CMAKE_VERSION.tar.gz
   - tar -xzf $CMAKE_VERSION.tar.gz
   - cd $CMAKE_VERSION
   - ./bootstrap > /dev/null
@@ -18,7 +18,7 @@ before_install:
   - sudo make install
   - cd ..
   - rm -rf $CMAKE_VERSION $CMAKE_VERSION.tar.gz
-  
+
 install:
   - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
 
@@ -41,3 +41,8 @@ before_script:
 script:
   - cmake ../
   - make
+
+notifications:
+  email:
+    on_success: never
+    on_failure: always
