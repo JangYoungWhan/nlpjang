@@ -4,17 +4,17 @@
 nlpjang provides a set of C++ natural language processing tools.
 It supports multi-platforms and the goal is to make it easy to use NLP algorithms.
 
-##Prerequisites
+## Prerequisites
 
 - GCC version 4.8 or greater.
 - MSVC version VC110(2012) or greater.
 - [CMake](http://www.cmake.org/) version 3.0 or greater.
 
-##Submodules
+## Submodules
 
 - [garnut](https://github.com/JangYoungWhan/garnut)
 
-##Getting Started
+## Getting Started
 
 ```bash
 # Get the latest repository.
@@ -37,6 +37,6 @@ make
 
 ```
 
-##Contact
+## Contact
 
 [stdjangyoungwhan@gmail.com](https://github.com/JangYoungWhan)
